@@ -4,6 +4,13 @@ var session = require('express-session')
 
 var app = express()
 
+// before the session middleware, req.session doesn't exist.
+app.use( (req, res, next) => {
+  console.log('Before app.use(session), req.session is always undefined');
+  console.log(`req.session = ${req.session}`);
+  next();
+})
+
 app.use(session({
   secret: 'keyboard cat',
   resave: false,
@@ -11,6 +18,8 @@ app.use(session({
 }))
 
 app.use(function (req, res, next) {
+  console.dir(`req.session.views = ${req.session.views}`);
+
   var views = req.session.views
 
   if (!views) {
