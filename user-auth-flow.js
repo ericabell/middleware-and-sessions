@@ -1,8 +1,20 @@
 var express = require('express')
 var parseurl = require('parseurl')
 var session = require('express-session')
+var mongoDBStore = require('connect-mongodb-session')(session);
 
 var app = express()
+var store = new mongoDBStore(
+  {
+    uri: 'mongodb://localhost:27017/connect_mongodb_session_test',
+    collection: 'mySessions'
+  }
+);
+
+store.on('error', (e) => {
+  assert.ifError(e);
+  assert.ok(false);
+})
 
 // before the session middleware, req.session doesn't exist.
 app.use( (req, res, next) => {
@@ -13,7 +25,11 @@ app.use( (req, res, next) => {
 
 app.use(session({
   secret: 'keyboard cat',
-  resave: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7 //1 week
+  },
+  store: store,
+  resave: true,
   saveUninitialized: true
 }))
 
