@@ -9,7 +9,7 @@ app.set('views', './views');
 app.set('view engine', 'mustache');
 
 app.use(express.static('public'));
-app.use(bodyParser.urlencode({ extend: true }));
+app.use(bodyParser.urlencoded({ extend: true }));
 
 
 // In this example '/post' does not exist.
@@ -29,6 +29,7 @@ app.get('/post', function(req, res, next) {
 });
 
 app.get('*', function(req, res, next) { // We handle any GET request path by assigning a path of *
+  console.log('handle any get request...');
   var err = new Error();
   err.status = 404;
   next(err); // Pass the error to the error middleware.
@@ -39,16 +40,21 @@ app.get('*', function(req, res, next) { // We handle any GET request path by ass
 // Error middleware is different from a regular middleware.
 // It needs four arguments: err, req, res and next.
 app.use(function(err, req, res, next) {
+  console.log('error middleware: ' + err.status);
   if(err.status !== 404) {
     return next();
   }
+  console.log('about to send the error message back to the browser');
+  console.log('error message is: ' + err.message);
+  // I guess we forgot to set the error message, let's set one
+  err.message = 'This is my custom error message';
   res.send(err.message);
 });
 
 // IF the error is not a 404, you can specify another status.
 app.use(function(err, req, res, next) {
   // during development we may want to print the errors:
-  console.log(err.stack);
+  console.log(err.stack);  // but this WON'T print anything, since we never set err.stack
   // Log error for debugging.
   log.error(err, req);
   res.status(500);
